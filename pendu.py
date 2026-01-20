@@ -1,6 +1,7 @@
 import pygame
 import sys
 import random
+import os
 
 # 1. Initialisation de Pygame
 pygame.init()
@@ -8,22 +9,22 @@ pygame.init()
 # Paramètres de la fenêtre
 SCREEN_WIDTH, SCREEN_HEIGHT = 900, 700
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-pygame.display.set_caption("The Hangman")
+pygame.display.set_caption("The Hangman - Final Version")
 
-try:
-    logo = pygame.image.load("logo.jpg")
-    pygame.display.set_icon(logo)
-except:
-    pass
+# --- FICHIER DE MOTS ---
+FICHIER_MOTS = "mots.txt"
+
+def initialiser_fichier():
+    """Crée le fichier avec quelques mots par défaut s'il n'existe pas."""
+    if not os.path.exists(FICHIER_MOTS):
+        with open(FICHIER_MOTS, "w", encoding="utf-8") as f:
+            f.write("PYTHON\nPENDU\nPYGAME\nORDINATEUR\n")
+
+initialiser_fichier()
 
 # --- COULEURS ---
-WHITE = (255, 255, 255)
-BLACK = (0, 0, 0)
-GOLD = (255, 215, 0)
-RED = (200, 0, 0)
-GREEN = (0, 180, 0)
-GRAY = (80, 80, 80)
-DARK_GRAY = (20, 20, 20)
+WHITE, BLACK, GOLD = (255, 255, 255), (0, 0, 0), (255, 215, 0)
+RED, GREEN, GRAY, DARK_GRAY = (200, 0, 0), (0, 180, 0), (80, 80, 80), (20, 20, 20)
 
 # --- CHARGEMENT DES RESSOURCES ---
 try:
@@ -32,74 +33,83 @@ try:
 except:
     bg_image = None
 
-try:
-    font_title = pygame.font.Font("Eater-Regular.ttf", 60)
-    font_button = pygame.font.Font("Butcherman-Regular.ttf", 30)
-    font_small = pygame.font.Font("Frijole-Regular.ttf", 14)
-    font_keys = pygame.font.SysFont("Arial", 20, bold=True)
-except:
-    font_title = pygame.font.SysFont("Arial", 60, bold=True)
-    font_button = pygame.font.SysFont("Arial", 30, bold=True)
-    font_small = pygame.font.SysFont("Arial", 14)
-    font_keys = pygame.font.SysFont("Arial", 20, bold=True)
+# Polices avec fallback sur Arial
+def get_font(name, size):
+    try:
+        return pygame.font.Font(name, size)
+    except:
+        return pygame.font.SysFont("Arial", size, bold=True)
 
+font_title = get_font("Eater-Regular.ttf", 60)
+font_button = get_font("Butcherman-Regular.ttf", 30)
+font_small = get_font("Frijole-Regular.ttf", 14)
+font_keys = pygame.font.SysFont("Arial", 20, bold=True)
 
 def draw_text(text, font, color, surface, x, y):
     text_obj = font.render(text, True, color)
     text_rect = text_obj.get_rect(center=(x, y))
     surface.blit(text_obj, text_rect)
 
+def ajouter_mot_au_fichier(nouveau_mot):
+    mot_propre = nouveau_mot.strip().upper()
+    if not mot_propre or len(mot_propre) < 3: return "TROP_COURT"
+    
+    try:
+        with open(FICHIER_MOTS, "r", encoding="utf-8") as f:
+            existants = [l.strip().upper() for l in f.readlines()]
+    except:
+        existants = []
+        
+    if mot_propre in existants: return "DOUBLON"
+    
+    with open(FICHIER_MOTS, "a", encoding="utf-8") as f:
+        f.write(mot_propre + "\n")
+    return "SUCCES"
 
 def menu_saisie_mot():
-    input_text = ""
-    msg = ""
-    running = True
+    input_text, msg, running = "", "", True
     input_rect = pygame.Rect(SCREEN_WIDTH // 2 - 200, 270, 400, 60)
+    
     while running:
         screen.fill(DARK_GRAY)
         if bg_image:
             temp_bg = bg_image.copy()
             temp_bg.fill((40, 40, 40), special_flags=pygame.BLEND_RGB_MULT)
             screen.blit(temp_bg, (0, 0))
-        draw_text(
-            "AJOUTER UN NOUVEAU MOT", font_button, WHITE, screen, SCREEN_WIDTH // 2, 150
-        )
+        
+        draw_text("AJOUTER UN NOUVEAU MOT", font_button, WHITE, screen, SCREEN_WIDTH // 2, 150)
         pygame.draw.rect(screen, WHITE, input_rect, 3, border_radius=10)
         draw_text(input_text, font_button, RED, screen, SCREEN_WIDTH // 2, 300)
 
-        draw_text(
-            "ENTREE : VALIDER       |        ECHAP : RETOUR",
-            font_small,
-            WHITE,
-            screen,
-            SCREEN_WIDTH // 2,
-            520,
-        )
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                sys.exit()
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_ESCAPE:
-                    running = False
-                elif event.key == pygame.K_RETURN:
-                    # Logique simplifiée ici pour la démo
-                    input_text = ""
-                elif event.key == pygame.K_BACKSPACE:
-                    input_text = input_text[:-1]
-                else:
-                    if len(input_text) < 12 and event.unicode.isalpha():
-                        input_text += event.unicode.upper()
-        pygame.display.update()
+        # Feedbacks
+        if msg == "SUCCES": draw_text("MOT ENREGISTRÉ !", font_small, GREEN, screen, SCREEN_WIDTH // 2, 380)
+        elif msg == "DOUBLON": draw_text("DÉJÀ DANS LA LISTE !", font_small, GOLD, screen, SCREEN_WIDTH // 2, 380)
+        elif msg == "TROP_COURT": draw_text("MOT TROP COURT (MIN 3) !", font_small, GRAY, screen, SCREEN_WIDTH // 2, 380)
 
+        draw_text("ENTREE : VALIDER | ECHAP : RETOUR", font_small, WHITE, screen, SCREEN_WIDTH // 2, 520)
+        
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT: pygame.quit(); sys.exit()
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE: running = False
+                elif event.key == pygame.K_RETURN:
+                    msg = ajouter_mot_au_fichier(input_text)
+                    input_text = ""
+                elif event.key == pygame.K_BACKSPACE: 
+                    input_text = input_text[:-1]
+                    msg = ""
+                else:
+                    if len(input_text) < 15 and event.unicode.isalpha():
+                        input_text += event.unicode.upper()
+                        msg = ""
+        pygame.display.update()
 
 def start_game():
     continuer_jeu = True
-
     while continuer_jeu:
-        # --- INITIALISATION DE LA MANCHE ---
+        # Recharger la liste à chaque manche pour inclure les nouveaux mots ajoutés
         try:
-            with open("mots.txt", "r", encoding="utf-8") as f:
+            with open(FICHIER_MOTS, "r", encoding="utf-8") as f:
                 mots = [l.strip().upper() for l in f.readlines() if l.strip()]
             mot_mystere = random.choice(mots) if mots else "PENDU"
         except:
@@ -107,9 +117,9 @@ def start_game():
 
         indice = random.choice(mot_mystere)
         lettres_trouvees = [l for l in mot_mystere if l == indice]
-        vies = 7
-        manche_en_cours = True
+        vies, manche_en_cours = 7, True
 
+        # Clavier dynamique
         lettres_clavier = []
         taille, marge = 35, 8
         debut_x = (SCREEN_WIDTH - (13 * (taille + marge))) // 2
@@ -117,16 +127,8 @@ def start_game():
             x = debut_x + (i % 13) * (taille + marge)
             y = 440 + (i // 13) * (taille + marge)
             statut = "indice" if lettre == indice else "libre"
-            lettres_clavier.append(
-                {
-                    "lettre": lettre,
-                    "rect": pygame.Rect(x, y, taille, taille),
-                    "statut": statut,
-                    "clique": (lettre == indice),
-                }
-            )
+            lettres_clavier.append({"lettre": lettre, "rect": pygame.Rect(x, y, taille, taille), "statut": statut, "clique": (lettre == indice)})
 
-        # --- BOUCLE DE LA MANCHE ---
         while manche_en_cours:
             screen.fill(DARK_GRAY)
             if bg_image:
@@ -135,155 +137,89 @@ def start_game():
                 screen.blit(temp_bg, (0, 0))
 
             mouse_pos = pygame.mouse.get_pos()
-            vies_color = RED if vies <= 3 else GREEN
-            draw_text(f"Chance : {vies} / 7", font_small, vies_color, screen, 100, 50)
-            draw_text(
-                "ECHAP POUR QUITTER LA PARTIE", font_small, GOLD, screen, 450, 630
-            )
-            # Mot secret
-            word_box = pygame.Rect(SCREEN_WIDTH // 2 - 250, 180, 500, 100)
+            draw_text(f"Chances : {vies} / 7", font_small, (RED if vies <= 2 else GREEN), screen, 100, 50)
+            
+            # Mot caché
+            word_box = pygame.Rect(SCREEN_WIDTH // 2 - 280, 180, 560, 100)
             pygame.draw.rect(screen, (10, 10, 10), word_box, border_radius=15)
             pygame.draw.rect(screen, GOLD, word_box, 2, border_radius=15)
-            affichage = "".join(
-                [l + " " if l in lettres_trouvees else "_ " for l in mot_mystere]
-            )
+            affichage = "".join([l + " " if l in lettres_trouvees else "_ " for l in mot_mystere])
             draw_text(affichage, font_button, GOLD, screen, SCREEN_WIDTH // 2, 230)
 
-            # Clavier
+            # Dessin Clavier
             for t in lettres_clavier:
-                rect_color = WHITE
-                text_color = BLACK
-                if t["statut"] == "indice":
-                    rect_color, text_color = GRAY, WHITE
-                elif t["statut"] == "correct":
-                    rect_color, text_color = GREEN, WHITE
-                elif t["statut"] == "incorrect":
-                    rect_color, text_color = RED, WHITE
-                elif t["rect"].collidepoint(mouse_pos):
-                    rect_color = GOLD
-
-                pygame.draw.rect(screen, rect_color, t["rect"], border_radius=5)
-                draw_text(
-                    t["lettre"],
-                    font_keys,
-                    text_color,
-                    screen,
-                    t["rect"].centerx,
-                    t["rect"].centery,
-                )
+                rect_c, text_c = WHITE, BLACK
+                if t["statut"] == "indice": rect_c, text_c = GRAY, WHITE
+                elif t["statut"] == "correct": rect_c, text_c = GREEN, WHITE
+                elif t["statut"] == "incorrect": rect_c, text_c = RED, WHITE
+                elif t["rect"].collidepoint(mouse_pos): rect_c = GOLD
+                pygame.draw.rect(screen, rect_c, t["rect"], border_radius=5)
+                draw_text(t["lettre"], font_keys, text_c, screen, t["rect"].centerx, t["rect"].centery)
 
             for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    pygame.quit()
-                    sys.exit()
+                if event.type == pygame.QUIT: pygame.quit(); sys.exit()
                 if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                     for t in lettres_clavier:
                         if t["rect"].collidepoint(mouse_pos) and not t["clique"]:
                             t["clique"] = True
                             if t["lettre"] in mot_mystere:
-                                if t["lettre"] not in lettres_trouvees:
-                                    lettres_trouvees.append(t["lettre"])
+                                lettres_trouvees.append(t["lettre"])
                                 t["statut"] = "correct"
                             else:
                                 vies -= 1
                                 t["statut"] = "incorrect"
-                if event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_ESCAPE:
-                        manche_en_cours = False
-                        continuer_jeu = False
+                if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+                    manche_en_cours = continuer_jeu = False
 
-            # GESTION DE LA VICTOIRE
+            # Victoire
             if all(l in lettres_trouvees for l in mot_mystere):
-                draw_text(
-                    "VICTOIRE !", font_title, GOLD, screen, SCREEN_WIDTH // 2, 350
-                )
+                draw_text("VICTOIRE !", font_title, GOLD, screen, SCREEN_WIDTH // 2, 350)
                 pygame.display.update()
                 pygame.time.delay(1200)
                 manche_en_cours = False
 
-            # GESTION DE LA DÉFAITE (Menu Rejouer/Quitter)
+            # Défaite
             elif vies <= 0:
                 perdu = True
                 while perdu:
                     screen.fill(BLACK)
-                    draw_text(
-                        "PERDU !", font_title, RED, screen, SCREEN_WIDTH // 2, 200
-                    )
-                    draw_text(
-                        f"LE MOT ETAIT : {mot_mystere}",
-                        font_button,
-                        WHITE,
-                        screen,
-                        SCREEN_WIDTH // 2,
-                        300,
-                    )
-
-                    mouse_perdu = pygame.mouse.get_pos()
-                    btn_rejouer = pygame.Rect(SCREEN_WIDTH // 2 - 220, 450, 200, 60)
-                    btn_menu = pygame.Rect(SCREEN_WIDTH // 2 + 20, 450, 230, 60)
-
-                    for btn, txt in [
-                        (btn_rejouer, "REJOUER"),
-                        (btn_menu, "MENU PRINCIPAL"),
-                    ]:
-                        color = RED if btn.collidepoint(mouse_perdu) else GRAY
-                        pygame.draw.rect(screen, color, btn, border_radius=10)
-                        draw_text(
-                            txt, font_button, WHITE, screen, btn.centerx, btn.centery
-                        )
-
-                    for event in pygame.event.get():
-                        if event.type == pygame.QUIT:
-                            pygame.quit()
-                            sys.exit()
-                        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-                            if btn_rejouer.collidepoint(mouse_perdu):
-                                perdu = False
-                                manche_en_cours = False
-                                # On reste dans la boucle continuer_jeu
-                            if btn_menu.collidepoint(mouse_perdu):
-                                perdu = False
-                                manche_en_cours = False
-                                continuer_jeu = False  # Retour au menu principal
-
+                    draw_text("PERDU !", font_title, RED, screen, SCREEN_WIDTH // 2, 200)
+                    draw_text(f"C'ÉTAIT : {mot_mystere}", font_button, WHITE, screen, SCREEN_WIDTH // 2, 300)
+                    m_p = pygame.mouse.get_pos()
+                    b_rej = pygame.Rect(SCREEN_WIDTH//2 - 220, 450, 200, 60)
+                    b_men = pygame.Rect(SCREEN_WIDTH//2 + 20, 450, 230, 60)
+                    for b, t_b in [(b_rej, "REJOUER"), (b_men, "MENU")]:
+                        c = RED if b.collidepoint(m_p) else GRAY
+                        pygame.draw.rect(screen, c, b, border_radius=10)
+                        draw_text(t_b, font_button, WHITE, screen, b.centerx, b.centery)
+                    for e in pygame.event.get():
+                        if e.type == pygame.QUIT: pygame.quit(); sys.exit()
+                        if e.type == pygame.MOUSEBUTTONDOWN and e.button == 1:
+                            if b_rej.collidepoint(m_p): perdu = manche_en_cours = False
+                            if b_men.collidepoint(m_p): perdu = manche_en_cours = continuer_jeu = False
                     pygame.display.update()
-
             pygame.display.update()
-
 
 def main_menu():
     while True:
-        if bg_image:
-            screen.blit(bg_image, (0, 0))
-        else:
-            screen.fill((50, 50, 50))
-        mouse_pos = pygame.mouse.get_pos()
+        if bg_image: screen.blit(bg_image, (0, 0))
+        else: screen.fill((50, 50, 50))
+        m_pos = pygame.mouse.get_pos()
         draw_text("LE PENDU", font_title, WHITE, screen, SCREEN_WIDTH // 2, 80)
-        btn_play = pygame.Rect(SCREEN_WIDTH // 2 - 125, 250, 250, 60)
-        btn_add = pygame.Rect(SCREEN_WIDTH // 2 - 125, 320, 250, 60)
-        btn_exit = pygame.Rect(SCREEN_WIDTH // 2 - 125, 390, 250, 60)
-        for btn, txt in [
-            (btn_play, "JOUER"),
-            (btn_add, "AJOUTER MOT"),
-            (btn_exit, "QUITTER"),
-        ]:
-            btn_color = RED if btn.collidepoint(mouse_pos) else BLACK
-            pygame.draw.rect(screen, btn_color, btn, border_radius=12)
-            draw_text(txt, font_button, WHITE, screen, btn.centerx, btn.centery)
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                sys.exit()
-            if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-                if btn_play.collidepoint(mouse_pos):
-                    start_game()
-                elif btn_add.collidepoint(mouse_pos):
-                    menu_saisie_mot()
-                elif btn_exit.collidepoint(mouse_pos):
-                    pygame.quit()
-                    sys.exit()
+        b_play = pygame.Rect(SCREEN_WIDTH // 2 - 125, 250, 250, 60)
+        b_add = pygame.Rect(SCREEN_WIDTH // 2 - 125, 320, 250, 60)
+        b_exit = pygame.Rect(SCREEN_WIDTH // 2 - 125, 390, 250, 60)
+        for b, txt in [(b_play, "JOUER"), (b_add, "AJOUTER MOT"), (b_exit, "QUITTER")]:
+            c = RED if b.collidepoint(m_pos) else BLACK
+            pygame.draw.rect(screen, c, b, border_radius=12)
+            draw_text(txt, font_button, WHITE, screen, b.centerx, b.centery)
+        for e in pygame.event.get():
+            if e.type == pygame.QUIT: pygame.quit(); sys.exit()
+            if e.type == pygame.MOUSEBUTTONDOWN and e.button == 1:
+                if b_play.collidepoint(m_pos): start_game()
+                elif b_add.collidepoint(m_pos): menu_saisie_mot()
+                elif b_exit.collidepoint(m_pos): pygame.quit(); sys.exit()
         pygame.display.update()
-
 
 if __name__ == "__main__":
     main_menu()
