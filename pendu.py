@@ -68,7 +68,7 @@ def menu_saisie_mot():
         draw_text(input_text, font_button, RED, screen, SCREEN_WIDTH // 2, 300)
 
         draw_text(
-            "ENTREE : VALIDER | ECHAP : RETOUR",
+            "ENTREE : VALIDER       |        ECHAP : RETOUR",
             font_small,
             WHITE,
             screen,
