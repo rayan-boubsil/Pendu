@@ -136,8 +136,10 @@ def start_game():
 
             mouse_pos = pygame.mouse.get_pos()
             vies_color = RED if vies <= 3 else GREEN
-            draw_text(f"Vies : {vies} / 7", font_small, vies_color, screen, 100, 50)
-
+            draw_text(f"Chance : {vies} / 7", font_small, vies_color, screen, 100, 50)
+            draw_text(
+                "ECHAP POUR QUITTER LA PARTIE", font_small, GOLD, screen, 450, 630
+            )
             # Mot secret
             word_box = pygame.Rect(SCREEN_WIDTH // 2 - 250, 180, 500, 100)
             pygame.draw.rect(screen, (10, 10, 10), word_box, border_radius=15)
