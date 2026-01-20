@@ -46,45 +46,52 @@ def draw_text(text, font, color, surface, x, y):
 
 def dessiner_pendu(surface, erreurs):
     """Dessine le pendu en fonction du nombre d'erreurs (0 à 7)"""
-    # Position de base pour le dessin
-    base_x, base_y = 750, 350
+    # Position de base pour le dessin (centrée et plus bas)
+    base_x, base_y = SCREEN_WIDTH // 2, 280
+    
+    # Dimensions agrandies de 15%
+    largeur_cadre = int(200 * 1.15)
+    hauteur_cadre = int(280 * 1.15)
     
     # Fond du dessin
-    pygame.draw.rect(surface, (30, 30, 30), (base_x - 100, base_y - 200, 200, 280), border_radius=10)
-    pygame.draw.rect(surface, GOLD, (base_x - 100, base_y - 200, 200, 280), 2, border_radius=10)
+    pygame.draw.rect(surface, (30, 30, 30), (base_x - largeur_cadre//2, base_y - hauteur_cadre + 80, largeur_cadre, hauteur_cadre), border_radius=10)
+    pygame.draw.rect(surface, GOLD, (base_x - largeur_cadre//2, base_y - hauteur_cadre + 80, largeur_cadre, hauteur_cadre), 2, border_radius=10)
+    
+    # Facteur d'échelle
+    scale = 1.15
     
     if erreurs >= 1:  # Base
-        pygame.draw.line(surface, BROWN, (base_x - 80, base_y + 60), (base_x + 80, base_y + 60), 8)
+        pygame.draw.line(surface, BROWN, (base_x - int(80*scale), base_y + int(60*scale)), (base_x + int(80*scale), base_y + int(60*scale)), 8)
     
     if erreurs >= 2:  # Poteau vertical
-        pygame.draw.line(surface, BROWN, (base_x - 40, base_y + 60), (base_x - 40, base_y - 160), 8)
+        pygame.draw.line(surface, BROWN, (base_x - int(40*scale), base_y + int(60*scale)), (base_x - int(40*scale), base_y - int(160*scale)), 8)
     
     if erreurs >= 3:  # Poteau horizontal
-        pygame.draw.line(surface, BROWN, (base_x - 40, base_y - 160), (base_x + 40, base_y - 160), 8)
+        pygame.draw.line(surface, BROWN, (base_x - int(40*scale), base_y - int(160*scale)), (base_x + int(40*scale), base_y - int(160*scale)), 8)
     
     if erreurs >= 4:  # Corde
-        pygame.draw.line(surface, WHITE, (base_x + 40, base_y - 160), (base_x + 40, base_y - 130), 3)
+        pygame.draw.line(surface, WHITE, (base_x + int(40*scale), base_y - int(160*scale)), (base_x + int(40*scale), base_y - int(130*scale)), 3)
     
     if erreurs >= 5:  # Tête
-        pygame.draw.circle(surface, WHITE, (base_x + 40, base_y - 110), 20, 3)
+        pygame.draw.circle(surface, WHITE, (base_x + int(40*scale), base_y - int(110*scale)), int(20*scale), 3)
         # Yeux (X X)
-        pygame.draw.line(surface, RED, (base_x + 33, base_y - 115), (base_x + 37, base_y - 111), 2)
-        pygame.draw.line(surface, RED, (base_x + 37, base_y - 115), (base_x + 33, base_y - 111), 2)
-        pygame.draw.line(surface, RED, (base_x + 43, base_y - 115), (base_x + 47, base_y - 111), 2)
-        pygame.draw.line(surface, RED, (base_x + 47, base_y - 115), (base_x + 43, base_y - 111), 2)
+        pygame.draw.line(surface, RED, (base_x + int(33*scale), base_y - int(115*scale)), (base_x + int(37*scale), base_y - int(111*scale)), 2)
+        pygame.draw.line(surface, RED, (base_x + int(37*scale), base_y - int(115*scale)), (base_x + int(33*scale), base_y - int(111*scale)), 2)
+        pygame.draw.line(surface, RED, (base_x + int(43*scale), base_y - int(115*scale)), (base_x + int(47*scale), base_y - int(111*scale)), 2)
+        pygame.draw.line(surface, RED, (base_x + int(47*scale), base_y - int(115*scale)), (base_x + int(43*scale), base_y - int(111*scale)), 2)
     
     if erreurs >= 6:  # Corps
-        pygame.draw.line(surface, WHITE, (base_x + 40, base_y - 90), (base_x + 40, base_y - 30), 3)
+        pygame.draw.line(surface, WHITE, (base_x + int(40*scale), base_y - int(90*scale)), (base_x + int(40*scale), base_y - int(30*scale)), 3)
     
     if erreurs >= 7:  # Bras + Jambes (dernière étape = mort complète)
         # Bras gauche
-        pygame.draw.line(surface, WHITE, (base_x + 40, base_y - 75), (base_x + 15, base_y - 55), 3)
+        pygame.draw.line(surface, WHITE, (base_x + int(40*scale), base_y - int(75*scale)), (base_x + int(15*scale), base_y - int(55*scale)), 3)
         # Bras droit
-        pygame.draw.line(surface, WHITE, (base_x + 40, base_y - 75), (base_x + 65, base_y - 55), 3)
+        pygame.draw.line(surface, WHITE, (base_x + int(40*scale), base_y - int(75*scale)), (base_x + int(65*scale), base_y - int(55*scale)), 3)
         # Jambe gauche
-        pygame.draw.line(surface, WHITE, (base_x + 40, base_y - 30), (base_x + 20, base_y + 10), 3)
+        pygame.draw.line(surface, WHITE, (base_x + int(40*scale), base_y - int(30*scale)), (base_x + int(20*scale), base_y + int(10*scale)), 3)
         # Jambe droite
-        pygame.draw.line(surface, WHITE, (base_x + 40, base_y - 30), (base_x + 60, base_y + 10), 3)
+        pygame.draw.line(surface, WHITE, (base_x + int(40*scale), base_y - int(30*scale)), (base_x + int(60*scale), base_y + int(10*scale)), 3)
 
 def ajouter_mot_au_fichier(nouveau_mot):
     mot_propre = nouveau_mot.strip().upper()
@@ -208,13 +215,13 @@ def start_game(difficulty : int):
         vies, manche_en_cours = 7, True
         erreurs = 0  # Compteur d'erreurs pour le dessin du pendu
 
-        # Clavier dynamique
+        # Clavier dynamique (positionné plus bas)
         lettres_clavier = []
         taille, marge = 35, 8
         debut_x = (SCREEN_WIDTH - (13 * (taille + marge))) // 2
         for i, lettre in enumerate("ABCDEFGHIJKLMNOPQRSTUVWXYZ"):
             x = debut_x + (i % 13) * (taille + marge)
-            y = 440 + (i // 13) * (taille + marge)
+            y = 540 + (i // 13) * (taille + marge)
             statut = "indice" if lettre == indice else "libre"
             lettres_clavier.append({"lettre": lettre, "rect": pygame.Rect(x, y, taille, taille), "statut": statut, "clique": (lettre == indice)})
 
@@ -226,17 +233,17 @@ def start_game(difficulty : int):
                 screen.blit(temp_bg, (0, 0))
 
             mouse_pos = pygame.mouse.get_pos()
-            draw_text(f"Chances : {vies} / 7", font_small, (RED if vies <= 2 else GREEN), screen, 100, 50)
+            draw_text(f"Chances : {vies} / 7", font_small, GOLD, screen, 100, 50)
             
             # Dessiner le pendu en temps réel
             dessiner_pendu(screen, erreurs)
             
-            # Mot caché
-            word_box = pygame.Rect(SCREEN_WIDTH // 2 - 280, 180, 560, 100)
+            # Mot caché (positionné plus bas)
+            word_box = pygame.Rect(SCREEN_WIDTH // 2 - 280, 380, 560, 100)
             pygame.draw.rect(screen, (10, 10, 10), word_box, border_radius=15)
             pygame.draw.rect(screen, GOLD, word_box, 2, border_radius=15)
             affichage = "".join([l + " " if l in lettres_trouvees else "_ " for l in mot_mystere])
-            draw_text(affichage, font_button, GOLD, screen, SCREEN_WIDTH // 2, 230)
+            draw_text(affichage, font_button, GOLD, screen, SCREEN_WIDTH // 2, 430)
 
             # Dessin Clavier
             for t in lettres_clavier:
