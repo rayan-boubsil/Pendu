@@ -12,15 +12,8 @@ screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 pygame.display.set_caption("The Hangman - Final Version")
 
 # --- FICHIER DE MOTS ---
-FICHIER_MOTS = "mots.txt"
-
-def initialiser_fichier():
-    """Crée le fichier avec quelques mots par défaut s'il n'existe pas."""
-    if not os.path.exists(FICHIER_MOTS):
-        with open(FICHIER_MOTS, "w", encoding="utf-8") as f:
-            f.write("PYTHON\nPENDU\nPYGAME\nORDINATEUR\n")
-
-initialiser_fichier()
+REPERTOIRE = os.path.dirname(os.path.abspath(__file__))
+FICHIER_MOTS = os.path.join(REPERTOIRE, "mots.txt")
 
 # --- COULEURS ---
 WHITE, BLACK, GOLD = (255, 255, 255), (0, 0, 0), (255, 215, 0)
@@ -53,47 +46,45 @@ def draw_text(text, font, color, surface, x, y):
 
 def dessiner_pendu(surface, erreurs):
     """Dessine le pendu en fonction du nombre d'erreurs (0 à 7)"""
-    # Position centrée en haut
-    base_x, base_y = SCREEN_WIDTH // 2, 200
+    # Position de base pour le dessin
+    base_x, base_y = 750, 350
     
     # Fond du dessin
-    pygame.draw.rect(surface, (30, 30, 30), (base_x - 100, base_y - 130, 200, 280), border_radius=10)
-    pygame.draw.rect(surface, GOLD, (base_x - 100, base_y - 130, 200, 280), 2, border_radius=10)
+    pygame.draw.rect(surface, (30, 30, 30), (base_x - 100, base_y - 200, 200, 280), border_radius=10)
+    pygame.draw.rect(surface, GOLD, (base_x - 100, base_y - 200, 200, 280), 2, border_radius=10)
     
     if erreurs >= 1:  # Base
-        pygame.draw.line(surface, BROWN, (base_x - 80, base_y + 130), (base_x + 80, base_y + 130), 8)
+        pygame.draw.line(surface, BROWN, (base_x - 80, base_y + 60), (base_x + 80, base_y + 60), 8)
     
     if erreurs >= 2:  # Poteau vertical
-        pygame.draw.line(surface, BROWN, (base_x - 40, base_y + 130), (base_x - 40, base_y - 90), 8)
+        pygame.draw.line(surface, BROWN, (base_x - 40, base_y + 60), (base_x - 40, base_y - 160), 8)
     
     if erreurs >= 3:  # Poteau horizontal
-        pygame.draw.line(surface, BROWN, (base_x - 40, base_y - 90), (base_x + 40, base_y - 90), 8)
+        pygame.draw.line(surface, BROWN, (base_x - 40, base_y - 160), (base_x + 40, base_y - 160), 8)
     
     if erreurs >= 4:  # Corde
-        pygame.draw.line(surface, WHITE, (base_x + 40, base_y - 90), (base_x + 40, base_y - 60), 3)
+        pygame.draw.line(surface, WHITE, (base_x + 40, base_y - 160), (base_x + 40, base_y - 130), 3)
     
     if erreurs >= 5:  # Tête
-        pygame.draw.circle(surface, WHITE, (base_x + 40, base_y - 40), 20, 3)
+        pygame.draw.circle(surface, WHITE, (base_x + 40, base_y - 110), 20, 3)
         # Yeux (X X)
-        pygame.draw.line(surface, RED, (base_x + 33, base_y - 45), (base_x + 37, base_y - 41), 2)
-        pygame.draw.line(surface, RED, (base_x + 37, base_y - 45), (base_x + 33, base_y - 41), 2)
-        pygame.draw.line(surface, RED, (base_x + 43, base_y - 45), (base_x + 47, base_y - 41), 2)
-        pygame.draw.line(surface, RED, (base_x + 47, base_y - 45), (base_x + 43, base_y - 41), 2)
+        pygame.draw.line(surface, RED, (base_x + 33, base_y - 115), (base_x + 37, base_y - 111), 2)
+        pygame.draw.line(surface, RED, (base_x + 37, base_y - 115), (base_x + 33, base_y - 111), 2)
+        pygame.draw.line(surface, RED, (base_x + 43, base_y - 115), (base_x + 47, base_y - 111), 2)
+        pygame.draw.line(surface, RED, (base_x + 47, base_y - 115), (base_x + 43, base_y - 111), 2)
     
     if erreurs >= 6:  # Corps
-        pygame.draw.line(surface, WHITE, (base_x + 40, base_y - 20), (base_x + 40, base_y + 40), 3)
+        pygame.draw.line(surface, WHITE, (base_x + 40, base_y - 90), (base_x + 40, base_y - 30), 3)
     
-    if erreurs >= 7:  # Bras gauche
-        pygame.draw.line(surface, WHITE, (base_x + 40, base_y - 5), (base_x + 15, base_y + 15), 3)
-    
-    if erreurs >= 8:  # Bras droit
-        pygame.draw.line(surface, WHITE, (base_x + 40, base_y - 5), (base_x + 65, base_y + 15), 3)
-    
-    if erreurs >= 9:  # Jambe gauche
-        pygame.draw.line(surface, WHITE, (base_x + 40, base_y + 40), (base_x + 20, base_y + 80), 3)
-    
-    if erreurs >= 10:  # Jambe droite
-        pygame.draw.line(surface, WHITE, (base_x + 40, base_y + 40), (base_x + 60, base_y + 80), 3)
+    if erreurs >= 7:  # Bras + Jambes (dernière étape = mort complète)
+        # Bras gauche
+        pygame.draw.line(surface, WHITE, (base_x + 40, base_y - 75), (base_x + 15, base_y - 55), 3)
+        # Bras droit
+        pygame.draw.line(surface, WHITE, (base_x + 40, base_y - 75), (base_x + 65, base_y - 55), 3)
+        # Jambe gauche
+        pygame.draw.line(surface, WHITE, (base_x + 40, base_y - 30), (base_x + 20, base_y + 10), 3)
+        # Jambe droite
+        pygame.draw.line(surface, WHITE, (base_x + 40, base_y - 30), (base_x + 60, base_y + 10), 3)
 
 def ajouter_mot_au_fichier(nouveau_mot):
     mot_propre = nouveau_mot.strip().upper()
@@ -149,29 +140,81 @@ def menu_saisie_mot():
                         msg = ""
         pygame.display.update()
 
-def start_game():
+def menu_difficulty():
+    while True:
+        if bg_image: screen.blit(bg_image, (0, 0))
+        else: screen.fill((50, 50, 50))
+        m_pos = pygame.mouse.get_pos()
+        draw_text("LE PENDU", font_title, WHITE, screen, SCREEN_WIDTH // 2, 80)
+        b_1 = pygame.Rect(SCREEN_WIDTH // 2 - 125, 250, 250, 60)
+        b_2 = pygame.Rect(SCREEN_WIDTH // 2 - 125, 320, 250, 60)
+        b_3 = pygame.Rect(SCREEN_WIDTH // 2 - 125, 390, 250, 60)
+        for b, txt in [(b_1, "NIVEAU 1"), (b_2, "NIVEAU 2"),(b_3, "NIVEAU 3")]:
+            c = RED if b.collidepoint(m_pos) else BLACK
+            pygame.draw.rect(screen, c, b, border_radius=12)
+            draw_text(txt, font_button, WHITE, screen, b.centerx, b.centery)
+        for e in pygame.event.get():
+            if e.type == pygame.QUIT: 
+                pygame.quit(); sys.exit()
+
+            if e.type == pygame.MOUSEBUTTONDOWN and e.button == 1:
+                if b_1.collidepoint(m_pos): 
+                    start_game(1)
+                elif b_2.collidepoint(m_pos): 
+                    start_game(2)
+                elif b_3.collidepoint(m_pos): 
+                    start_game(3)
+
+            if e.type == pygame.KEYDOWN and e.key == pygame.K_ESCAPE:
+                main_menu()
+        pygame.display.update()
+
+def start_game(difficulty : int):
     continuer_jeu = True
+
+    niveau_difficile = []
+    niveau_intermediaire = []
+    niveau_facile = []
+
     while continuer_jeu:
         # Recharger la liste à chaque manche pour inclure les nouveaux mots ajoutés
-        try:
-            with open(FICHIER_MOTS, "r", encoding="utf-8") as f:
-                mots = [l.strip().upper() for l in f.readlines() if l.strip()]
-            mot_mystere = random.choice(mots) if mots else "PENDU"
-        except:
-            mot_mystere = "PENDU"
+
+        with open(FICHIER_MOTS, "r", encoding="utf-8") as f:
+            mots = [l.strip().upper() for l in f.readlines() if l.strip()]
+
+        ###############################################
+        if mots:
+            for mot in mots:
+                if len(mot) > 5:
+                    if len(mot) == len(set(mot)): #"set" permet d'indiquer "lettre unique" -> Coucou = c, o, u.
+                        niveau_difficile.append(mot)
+                    else: 
+                        niveau_intermediaire.append(mot)
+                else:
+                    niveau_facile.append(mot)
+        else:
+            mot_mystere = "INDICE"
+        ###############################################
+        if difficulty == 3:
+            mot_mystere = random.choice(niveau_difficile)
+        elif difficulty == 2:
+            mot_mystere = random.choice(niveau_intermediaire)
+        elif difficulty == 1:
+            mot_mystere = random.choice(niveau_facile)
+        ###############################################
 
         indice = random.choice(mot_mystere)
         lettres_trouvees = [l for l in mot_mystere if l == indice]
         vies, manche_en_cours = 7, True
-        erreurs = 0  # Compteur d'erreurs pour le dessin
+        erreurs = 0  # Compteur d'erreurs pour le dessin du pendu
 
-        # Clavier dynamique - position ajustée plus bas
+        # Clavier dynamique
         lettres_clavier = []
         taille, marge = 35, 8
         debut_x = (SCREEN_WIDTH - (13 * (taille + marge))) // 2
         for i, lettre in enumerate("ABCDEFGHIJKLMNOPQRSTUVWXYZ"):
             x = debut_x + (i % 13) * (taille + marge)
-            y = 550 + (i // 13) * (taille + marge)  # Déplacé de 440 à 550
+            y = 440 + (i // 13) * (taille + marge)
             statut = "indice" if lettre == indice else "libre"
             lettres_clavier.append({"lettre": lettre, "rect": pygame.Rect(x, y, taille, taille), "statut": statut, "clique": (lettre == indice)})
 
@@ -185,15 +228,15 @@ def start_game():
             mouse_pos = pygame.mouse.get_pos()
             draw_text(f"Chances : {vies} / 7", font_small, (RED if vies <= 2 else GREEN), screen, 100, 50)
             
-            # Dessiner le pendu (centré en haut)
+            # Dessiner le pendu en temps réel
             dessiner_pendu(screen, erreurs)
             
-            # Mot caché - position ajustée plus bas pour éviter le pendu
-            word_box = pygame.Rect(SCREEN_WIDTH // 2 - 280, 420, 560, 100)  # Déplacé de 180 à 420
+            # Mot caché
+            word_box = pygame.Rect(SCREEN_WIDTH // 2 - 280, 180, 560, 100)
             pygame.draw.rect(screen, (10, 10, 10), word_box, border_radius=15)
             pygame.draw.rect(screen, GOLD, word_box, 2, border_radius=15)
             affichage = "".join([l + " " if l in lettres_trouvees else "_ " for l in mot_mystere])
-            draw_text(affichage, font_button, GOLD, screen, SCREEN_WIDTH // 2, 470)  # Déplacé de 230 à 470
+            draw_text(affichage, font_button, GOLD, screen, SCREEN_WIDTH // 2, 230)
 
             # Dessin Clavier
             for t in lettres_clavier:
@@ -216,10 +259,27 @@ def start_game():
                                 t["statut"] = "correct"
                             else:
                                 vies -= 1
-                                erreurs += 1  # Incrémenter les erreurs
+                                erreurs += 1  # Incrémenter le compteur d'erreurs
                                 t["statut"] = "incorrect"
-                if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
-                    manche_en_cours = continuer_jeu = False
+                ###
+                if event.type == pygame.KEYDOWN:
+                    lettre = event.unicode.upper() #On récupère l'entré de notre clavier.
+                    if lettre.isalpha() and len(lettre) == 1: #On vérifie si 'lettre' est une lettre de l'alphabet et que l'entrée n'est pas plusieurs caractères.
+                        for t in lettres_clavier:
+                            if t["lettre"] == lettre and not t["clique"]:
+                                t["clique"] = True
+                                if lettre in mot_mystere:
+                                    lettres_trouvees.append(lettre)
+                                    t["statut"] = "correct"
+                                else:
+                                    vies -= 1
+                                    erreurs += 1  # Incrémenter le compteur d'erreurs
+                                    t["statut"] = "incorrect"
+                                break
+                ###
+
+                    if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+                        manche_en_cours = continuer_jeu = False
 
             # Victoire
             if all(l in lettres_trouvees for l in mot_mystere):
@@ -246,7 +306,10 @@ def start_game():
                         if e.type == pygame.QUIT: pygame.quit(); sys.exit()
                         if e.type == pygame.MOUSEBUTTONDOWN and e.button == 1:
                             if b_rej.collidepoint(m_p): perdu = manche_en_cours = False
-                            if b_men.collidepoint(m_p): perdu = manche_en_cours = continuer_jeu = False
+                            if b_men.collidepoint(m_p): 
+                                perdu = manche_en_cours
+                                continuer_jeu = False
+                                main_menu()
                     pygame.display.update()
             pygame.display.update()
 
@@ -259,14 +322,14 @@ def main_menu():
         b_play = pygame.Rect(SCREEN_WIDTH // 2 - 125, 250, 250, 60)
         b_add = pygame.Rect(SCREEN_WIDTH // 2 - 125, 320, 250, 60)
         b_exit = pygame.Rect(SCREEN_WIDTH // 2 - 125, 390, 250, 60)
-        for b, txt in [(b_play, "JOUER"), (b_add, "AJOUTER MOT"), (b_exit, "QUITTER")]:
+        for b, txt in [(b_play, "JOUER"), (b_add, "AJOUTER MOT"),(b_exit, "QUITTER")]:
             c = RED if b.collidepoint(m_pos) else BLACK
             pygame.draw.rect(screen, c, b, border_radius=12)
             draw_text(txt, font_button, WHITE, screen, b.centerx, b.centery)
         for e in pygame.event.get():
             if e.type == pygame.QUIT: pygame.quit(); sys.exit()
             if e.type == pygame.MOUSEBUTTONDOWN and e.button == 1:
-                if b_play.collidepoint(m_pos): start_game()
+                if b_play.collidepoint(m_pos): menu_difficulty()
                 elif b_add.collidepoint(m_pos): menu_saisie_mot()
                 elif b_exit.collidepoint(m_pos): pygame.quit(); sys.exit()
         pygame.display.update()
