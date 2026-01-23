@@ -14,7 +14,10 @@ pygame.mixer.init()
 # Paramètres de la fenêtre
 SCREEN_WIDTH, SCREEN_HEIGHT = 900, 700
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-pygame.display.set_caption("The Hangman - Score Edition")
+pygame.display.set_caption("The Hangman")
+# Chargement et application de l'icône
+icon = pygame.image.load("logo.jpg")
+pygame.display.set_icon(icon)
 
 # --- FICHIERS ---
 REPERTOIRE = os.path.dirname(os.path.abspath(__file__))
