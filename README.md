@@ -1,2 +1,2 @@
 # Pendu
-Jeu du pendu avec pygames
+Jeu du pendu avec pygame
